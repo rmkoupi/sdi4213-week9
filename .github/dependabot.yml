@@ -1,0 +1,15 @@
+# Dependabot: check the pip requirements and the GitHub Actions used by the
+# workflows, both in the repository root, once a week. Each update arrives as
+# a pull request, so it goes through CI and review like any other change.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # "/" is correct for Actions: Dependabot looks in /.github/workflows itself.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
