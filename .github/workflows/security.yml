@@ -1,0 +1,41 @@
+name: Security Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+# Least privilege: this workflow only needs to read the repository.
+permissions:
+  contents: read
+
+jobs:
+  security-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      # Policy 1 - secret hygiene. `git ls-files --error-unmatch .env` SUCCEEDS
+      # when .env is tracked, so the job must fail on success, not on failure.
+      - name: Fail if .env is tracked by Git
+        run: |
+          if git ls-files --error-unmatch .env > /dev/null 2>&1; then
+            echo "::error file=.env::.env is tracked by Git. Remove it with 'git rm --cached .env' and rotate the secrets it contained."
+            exit 1
+          fi
+          echo ".env is not tracked."
+
+      - name: Build the hardened Docker image
+        run: docker build -t helpdesk:security .
+
+      # Policy 2 - non-root container. UID 0 is root.
+      - name: Fail if the container runs as root
+        run: |
+          USER_ID=$(docker run --rm --entrypoint id helpdesk:security -u)
+          echo "Container UID: $USER_ID"
+          if [ "$USER_ID" -eq 0 ]; then
+            echo "::error file=Dockerfile::The image runs as root (UID 0). Add a non-root user and a USER instruction before CMD."
+            exit 1
+          fi
