@@ -1,0 +1,29 @@
+name: Security Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  security-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      # TODO 1: Add a shell step that fails if .env is tracked by Git.
+      # Hint: git ls-files --error-unmatch .env
+
+      # TODO 2: Build the Docker image, for example:
+      # docker build -t helpdesk:security .
+
+      # TODO 3: Add a step that checks the runtime user ID and fails if it is 0.
+      # Hint:
+      # USER_ID=$(docker run --rm --entrypoint id helpdesk:security -u)
+      # echo "Container UID: $USER_ID"
+      # test "$USER_ID" -ne 0
