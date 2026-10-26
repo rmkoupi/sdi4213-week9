@@ -20,7 +20,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - helpdesk_data:/var/lib/postgresql/data
+      # postgres:18 keeps its data in /var/lib/postgresql/18/docker and refuses
+      # to start if something is mounted at the old .../data path. Mount the
+      # parent directory instead.
+      - helpdesk_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -30,7 +33,8 @@ services:
   adminer:
     image: adminer:5
     ports:
-      - "8080:8080"
+      # Host port overridable from .env (ADMINER_PORT=8081) if 8080 is taken.
+      - "${ADMINER_PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
